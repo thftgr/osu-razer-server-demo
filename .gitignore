@@ -4,3 +4,5 @@
 build/*
 gradle/*
 api.v2.me.json
+api.v2.me.json.bak.json
+Setting.json

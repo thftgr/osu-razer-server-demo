@@ -3,21 +3,13 @@ package com.thftgr.server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
-import io.vertx.reactivex.core.http.HttpServerRequest;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 
 public class Server {
 
@@ -25,45 +17,32 @@ public class Server {
         Vertx vertx = Vertx.vertx();
         Router router = Router.router(vertx);
 
+
         vertx.createHttpServer().requestHandler(router).listen(port, http -> System.out.println("server started"));
 
 
         //로그인 인증 API
         router.route(HttpMethod.POST, "/oauth/token").handler(BodyHandler.create()).handler(req -> {
+
+//            false 만 내려옴 인증 api 확인필요
             String username = req.request().getFormAttribute("username");
-            String passWdMD5 = new Encrypt().MD5(req.request().getFormAttribute("password"));
+//            String password = req.request().getFormAttribute("password");
+
+//            String auth = new Auth().login(username, password);
+//            if(auth != null){
+//                System.out.println("login PASS user : "+username);
+//                req.response().setStatusCode(200).end(auth);
+//            }else{
+//                System.out.println("login FAIL user : "+username);
+//                req.response().setStatusCode(400).end();
+//            }
 
 
+            //임시 강제셋
+            req.response().setStatusCode(200).end(new Auth().buildAuth(username));
+//            req.response().setStatusCode(200).end(new Auth().buildAuth("8226"));
 
 
-            OkHttpClient client = new OkHttpClient().newBuilder()
-                    .build();
-            Request request = new Request.Builder()
-                    .url("https://api.debian.moe/auth/v2?id="+username+"&pwMD5="+passWdMD5)
-                    .method("GET", null)
-                    .build();
-            String response = "";
-
-            try {
-                response= client.newCall(request).execute().body().string().toLowerCase();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(response.contains("true")){
-                System.out.println(response);
-                JsonObject jo = new JsonObject();
-                jo.addProperty("token_type", "Bearer");
-                jo.addProperty("expires_in", "86400");
-                jo.addProperty("access_token", "accToken");
-                jo.addProperty("refresh_token", "refToken");
-
-                System.out.println(jo.toString());
-
-                req.response().setStatusCode(200).end(jo.toString());
-            }else{
-                System.out.println(response);
-                req.response().setStatusCode(400).end();
-            }
         });
 
         //http://localhost/api/v2/me/
@@ -80,27 +59,37 @@ public class Server {
             req.response().setStatusCode(200).putHeader("Accept", "application/json").end(tmp.toString());
         });
 
-        router.route(HttpMethod.GET, "/api/:id").handler(req -> {
+
+        //http://localhost:8080/api/v2/users/8226/
+        router.route(HttpMethod.GET, "/api/v2/users/:id/").handler(req -> {
             System.out.println(req.pathParam("id"));
+            userProfileBuilder userProfileBuilder = new userProfileBuilder();
+            try {
+                req.response().setStatusCode(200).putHeader("Accept", "application/json").end(userProfileBuilder.getProfile(req.pathParam("id")).toString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         });
 
         //이거는 헤더에 올라오는 Authorization 토큰으로 분리해야함
         //토큰 => db 조회
         router.route(HttpMethod.GET, "/api/v2/me").handler(req -> {
 
-            JsonObject tmp = new JsonObject();
+            String userid = req.request().getHeader("Authorization");
+            userid = userid.substring(userid.indexOf(" ")+1,userid.indexOf(":"));
+            System.out.println(userid);
+
+            userProfileBuilder userProfileBuilder = new userProfileBuilder();
             try {
-                tmp = (JsonObject) JsonParser.parseReader(new Gson().newJsonReader(new FileReader("api.v2.me.json")));
+                req.response().setStatusCode(200).putHeader("Accept", "application/json").end(userProfileBuilder.getProfile(userid).toString());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            req.response().setStatusCode(200).putHeader("Accept", "application/json").end(tmp.toString());
         });
         ///api/v2/users/8146232/
 
 
     }
-
 
 
 }
