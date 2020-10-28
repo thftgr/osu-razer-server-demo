@@ -69,7 +69,7 @@ public class userProfileBuilder {
 
 
 
-
+        db.closeDatabaseConnection();
         return user;
     }
 

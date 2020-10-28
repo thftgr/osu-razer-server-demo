@@ -26,20 +26,22 @@ public class Server {
 
 //            false 만 내려옴 인증 api 확인필요
             String username = req.request().getFormAttribute("username");
-//            String password = req.request().getFormAttribute("password");
+            String password = req.request().getFormAttribute("password");
 
-//            String auth = new Auth().login(username, password);
-//            if(auth != null){
-//                System.out.println("login PASS user : "+username);
-//                req.response().setStatusCode(200).end(auth);
-//            }else{
-//                System.out.println("login FAIL user : "+username);
-//                req.response().setStatusCode(400).end();
-//            }
+            String auth = new Auth().login(username, password);
+            if (auth == null) {
+                System.out.println("login FAIL user : " + username);
+                req.response().setStatusCode(400).end();
+                return;
+            }
+
+
+            System.out.println("login PASS user : " + username);
+            req.response().setStatusCode(200).end(auth);
 
 
             //임시 강제셋
-            req.response().setStatusCode(200).end(new Auth().buildAuth(username));
+//            req.response().setStatusCode(200).end(new Auth().buildAuth(username));
 //            req.response().setStatusCode(200).end(new Auth().buildAuth("8226"));
 
 
@@ -76,7 +78,7 @@ public class Server {
         router.route(HttpMethod.GET, "/api/v2/me").handler(req -> {
 
             String userid = req.request().getHeader("Authorization");
-            userid = userid.substring(userid.indexOf(" ")+1,userid.indexOf(":"));
+            userid = userid.substring(userid.indexOf(" ") + 1, userid.indexOf(":"));
             System.out.println(userid);
 
             userProfileBuilder userProfileBuilder = new userProfileBuilder();

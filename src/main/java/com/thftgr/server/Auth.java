@@ -2,39 +2,25 @@ package com.thftgr.server;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import com.thftgr.Main;
 
 import java.io.IOException;
 
 public class Auth {
     public String login(String username, String password) {
+        Database db = new Database();
+        db.connectDatabase(Main.settingValue.getAsJsonObject("database"));
 
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
-        Request request = new Request.Builder()
-                .url("https://api.debian.moe/auth/v2?id=" + username + "&pwMD5=" + new Encrypt().MD5(password))
-                .method("GET", null)
-                .build();
-        JsonObject body;
-
-        try {
-            String data = client.newCall(request).execute().body().string();
-            body = (JsonObject) JsonParser.parseString(data.toLowerCase());
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
+        //유저 기본데이터
+        JsonObject data = db.query(Main.settingValue.getAsJsonObject("sql").get("getUserByUsername").getAsString().replace("%username%",username)).get(0).getAsJsonObject();
+        if(BCrypt.checkpw(new Encrypt().MD5(password),data.get("password_md5").getAsString()) && data.get("ban_datetime").getAsInt() == 0){
+            return buildAuth(data.get("id").getAsString());
         }
-        //{
-        //    "status": {
-        //        "code": "200",
-        //        "message": "٩(๑`^´๑)۶"
-        //    },
-        //    "success": true
-        //    "userid" : 1000
-        //}
-        if (!body.get("success").getAsBoolean()) return null;
-        return buildAuth(body.get("userid").getAsString());
+
+        return null;
+
+
+
     }
 
     public String buildAuth(String auth) {

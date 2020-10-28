@@ -21,7 +21,7 @@ dependencies {
 
     compile files("${System.properties['java.home']}/../lib/tools.jar")
 
-    implementation("com.squareup.okhttp3:okhttp:4.8.1")
+//    implementation("com.squareup.okhttp3:okhttp:4.8.1")
 
     implementation 'com.google.code.gson:gson:2.8.6'
 
@@ -36,6 +36,8 @@ dependencies {
     compile group: 'io.vertx', name: 'vertx-ext', version: '35', ext: 'pom'
 
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.20'
+
+
 }
 
 compileJava.options.encoding = 'UTF-8'
