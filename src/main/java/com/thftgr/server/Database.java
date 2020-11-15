@@ -64,8 +64,10 @@ public class Database {
             while (rs.next()) {
                 beatMapJsonObject = new JsonObject();
 
+
                 for (int j = 1; j < columnCount + 1; j++) {
                     ColumnName = rs.getMetaData().getColumnName(j);
+                    System.out.println(ColumnName);
                     beatMapJsonObject.addProperty(ColumnName, rs.getString(ColumnName));
                 }
                 beatMapJsonArray.add(beatMapJsonObject);

@@ -3,6 +3,7 @@ package com.thftgr;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.thftgr.server.Database;
 import com.thftgr.server.Server;
 
 import java.io.FileNotFoundException;
@@ -15,6 +16,9 @@ public class Main {
 
 
         new Server().loadVertx(8080);
+//        Database db = new Database();
+//        db.connectDatabase(Main.settingValue.getAsJsonObject("database"));
+
     }
 }
 
