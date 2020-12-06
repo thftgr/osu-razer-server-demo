@@ -13,7 +13,9 @@ public class Auth {
 
         //유저 기본데이터
         JsonObject data = db.query(Main.settingValue.getAsJsonObject("sql").get("getUserByUsername").getAsString().replace("%username%",username)).get(0).getAsJsonObject();
-        if(BCrypt.checkpw(new Encrypt().MD5(password),data.get("password_md5").getAsString()) && data.get("ban_datetime").getAsInt() == 0){
+        if(
+                BCrypt.checkpw(new Encrypt().MD5(password),data.get("password_md5").getAsString())
+                        && data.get("ban_datetime").getAsInt() == 0){
             return buildAuth(data.get("id").getAsString());
         }
 
